@@ -632,6 +632,33 @@ function saveQuiet(){
   catch (e) { toast("Speichern im Browser nicht möglich"); }
 }
 
+function dupSearch(q){
+  var box = document.getElementById("dupbox");
+  q = String(q).trim().toLowerCase();
+  if (q.length < 2){ box.innerHTML = ""; return; }
+  var words = q.split(/\s+/);
+  var hits = data.tasks.filter(function(t){
+    var title = t.title.toLowerCase();
+    return words.every(function(w){ return title.indexOf(w) >= 0; });
+  }).slice(0, 5);
+  if (hits.length === 0){ box.innerHTML = ""; return; }
+  var h = '<div class="duphead">Gibt es schon – antippen statt neu anlegen:</div>';
+  hits.forEach(function(t){
+    h += '<button onclick="useExisting(\'' + t.id + '\')">' + esc(t.title) + '</button>';
+  });
+  box.innerHTML = h;
+}
+
+function useExisting(id){
+  document.getElementById("newtitle").value = "";
+  document.getElementById("dupbox").innerHTML = "";
+  state.movePlan = null;
+  state.selTask = id;
+  render();
+  if (isNarrow()) setView("cal");
+  toast("Vorhandene Arbeit ausgewählt – jetzt Tag im Kalender antippen");
+}
+
 function addWork(){
   var inp = document.getElementById("newtitle");
   var title = inp.value.trim();
