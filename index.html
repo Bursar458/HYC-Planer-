@@ -115,7 +115,14 @@
   .day.today { border-color: var(--signal); background: #fff6f6; }
   .day.target { outline: 2px dashed var(--rope); cursor: pointer; }
   .day.dragover { outline: 3px solid var(--rope); background: #fff8ea; }
-  .daynum { font-weight: 700; color: var(--navy); margin: 0 0 3px 2px; }
+  .daynum { font-weight: 700; color: var(--navy); margin: 0 0 3px 2px; display: flex; align-items: baseline; }
+  .needcount {
+    margin-left: auto; margin-right: 2px;
+    font-size: 10.5px; font-weight: 600; color: #6c7a83;
+    background: #eef2f5; border-radius: 8px; padding: 1px 5px;
+  }
+  .needcount::after { content: "\00a0P"; font-weight: 400; opacity: .75; }
+  .day.today .needcount { background: #f7e2e2; color: #8e3a3a; }
   .day.today .daynum { color: var(--signal); }
   .chip {
     display: block; width: 100%; text-align: left; border: 0; cursor: grab;
@@ -146,6 +153,38 @@
     border-radius: 6px; padding: 7px 9px; font-size: 12.5px; font-weight: 600;
   }
   .monthbtn.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .modalhead { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
+  .modalhead h2 { margin: 0; }
+  .modalhead p { margin: 2px 0 0; }
+  .closex {
+    appearance: none; border: 1px solid #c6ced4; background: #fff; cursor: pointer;
+    font-family: inherit; font-size: 17px; line-height: 1; color: #4d5a63;
+    width: 38px; height: 38px; border-radius: 9px; flex: none; margin-left: auto;
+  }
+  .closex:hover { background: #f4f7f9; border-color: #9aa6ae; color: var(--navy); }
+  .actionsep {
+    margin: 18px 0 8px; padding-top: 12px; border-top: 1px solid #e7ebee;
+    font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: #6c7a83; font-weight: 700;
+  }
+  .ta { resize: vertical; min-height: 52px; font-family: inherit; line-height: 1.35; }
+  .safepick { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 7px; }
+  .safebtn {
+    appearance: none; cursor: pointer; font-family: inherit;
+    border: 1px solid #c6ced4; background: #fff; color: var(--ink);
+    border-radius: 14px; padding: 6px 11px; font-size: 12.5px; font-weight: 600;
+  }
+  .safebtn.on { background: var(--navy); border-color: var(--navy); color: #fff; }
+  .safebtn .tick { font-weight: 700; margin-right: 5px; }
+  .safebtn .rmx { margin-left: 7px; opacity: .55; font-weight: 400; }
+  .safebtn .rmx:hover { opacity: 1; color: var(--signal); }
+  .safebtn.on .rmx:hover { color: #ffb3b3; }
+  .numrow { display: flex; gap: 8px; align-items: stretch; }
+  .modal .numrow .btn.numbtn { width: 52px; flex: none; margin: 0; text-align: center; font-size: 20px; padding: 8px 0; }
+  .numin { flex: 1; text-align: center; font-weight: 700; font-size: 17px; margin: 0; }
+  .pcount {
+    display: inline-block; background: rgba(18,49,78,.1); color: var(--navy);
+    border-radius: 8px; padding: 0 4px; font-size: 9.5px; font-weight: 700; margin-left: 2px;
+  }
   .rulehint { font-size: 12.5px; color: #4d5a63; margin-top: 6px; line-height: 1.4; }
   .yearrow { display: flex; gap: 8px; align-items: stretch; margin-bottom: 8px; }
   .yearrow .einput { flex: 0 0 auto; width: auto; min-width: 120px; margin: 0; }
@@ -160,6 +199,16 @@
   }
   @media (max-width: 640px) { .credit { font-size: 11.5px; padding-bottom: 20px; } }
   .printhead { display: none; }
+  .daysheet { display: none; }
+  .dayprint {
+    appearance: none; border: 0; background: transparent; cursor: pointer;
+    font-size: 12px; line-height: 1; padding: 1px 3px; margin-left: 4px;
+    opacity: 0; transition: opacity .12s ease; border-radius: 4px;
+  }
+  .day:hover .dayprint { opacity: .65; }
+  .dayprint:hover { opacity: 1 !important; background: #e3e9ee; }
+  .dayprint:focus-visible { opacity: 1; }
+  @media (hover: none) { .dayprint { display: none; } }
 
   @media print {
     body { background: #fff; }
@@ -179,12 +228,54 @@
     .day.today { border-color: #bb3038; }
     .ycell { min-height: 96px; break-inside: avoid; background: #fff !important; border-color: #c6ced4; }
     .yeargrid { grid-template-columns: repeat(4, 1fr); }
-    .chip, .yitem, .lgdot, .day, .ycell {
+    .needcount { background: #eef2f5 !important; color: #4d5a63 !important; }
+    .chip, .yitem, .lgdot, .day, .ycell, .needcount {
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
     .chip { white-space: normal; overflow: visible; font-size: 9.5px; }
     .yitem { font-size: 9.5px; }
     .arealegend { display: flex !important; margin-top: 8px; padding-top: 6px; }
+  }
+
+  @media print {
+    body.printday .printhead, body.printday .wrap { display: none !important; }
+    body.printday .daysheet { display: block; }
+    .ds-head { display: flex; align-items: center; gap: 14px; border-bottom: 3px solid #12314e; padding-bottom: 10px; margin-bottom: 12px; }
+    .ds-logo { height: 46px; width: auto; }
+    .ds-titles { flex: 1; }
+    .ds-date { font-size: 21px; font-weight: 700; color: #12314e; }
+    .ds-club { font-size: 11.5px; color: #55636c; margin-top: 2px; }
+    .ds-need { text-align: center; border: 2px solid #12314e; border-radius: 8px; padding: 5px 12px; }
+    .ds-neednum { display: block; font-size: 26px; font-weight: 700; color: #12314e; line-height: 1; }
+    .ds-needlbl { display: block; font-size: 9px; color: #55636c; margin-top: 2px; line-height: 1.2; }
+    .ds-pack { display: flex; gap: 12px; margin-bottom: 14px; }
+    .ds-packcol { flex: 1; border: 1px solid #c6ced4; border-radius: 8px; padding: 8px 10px; break-inside: avoid; }
+    .ds-packtitle { font-size: 11px; font-weight: 700; color: #12314e; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+    .ds-packlist { display: flex; flex-wrap: wrap; gap: 3px 14px; }
+    .ds-item { font-size: 11.5px; }
+    .ds-none { font-size: 11.5px; color: #8b979f; }
+    .ds-worktitle { font-size: 11px; font-weight: 700; color: #12314e; text-transform: uppercase; letter-spacing: .05em; margin: 0 0 6px; }
+    .ds-work { border: 1px solid #dde2e6; border-left: 5px solid #b8c2ca; border-radius: 7px; padding: 7px 10px; margin-bottom: 6px; break-inside: avoid; }
+    .ds-wrow { display: flex; align-items: baseline; gap: 10px; }
+    .ds-wname { font-size: 13px; font-weight: 700; flex: 1; }
+    .ds-wpers { font-size: 12px; font-weight: 700; color: #12314e; white-space: nowrap; }
+    .ds-done { font-size: 10px; font-weight: 400; color: #2e7d5b; }
+    .ds-warea { font-size: 10px; color: #6c7a83; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
+    .ds-wline { font-size: 11.5px; line-height: 1.45; }
+    .ds-names { font-size: 11.5px; margin-top: 4px; display: flex; align-items: flex-end; gap: 6px; }
+    .ds-lines { flex: 1; border-bottom: 1px solid #9aa6ae; height: 13px; }
+    .ds-signup { margin-top: 14px; border: 1px solid #c6ced4; border-radius: 8px; padding: 10px 12px; break-inside: avoid; }
+    .ds-signtitle { font-size: 12px; font-weight: 700; color: #12314e; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+    .ds-signline { border-bottom: 1px solid #c6ced4; height: 20px; display: flex; align-items: flex-end; }
+    .ds-nr { font-size: 10px; color: #8b979f; padding-bottom: 2px; }
+    .ds-foot { font-size: 10px; color: #6c7a83; margin-top: 7px; }
+    .ds-head, .ds-work, .ds-packcol, .ds-need { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  @media print and (orientation: landscape) {
+    body.printday .ds-work { break-inside: avoid; }
+    body.printday .daysheet { column-count: 2; column-gap: 14mm; }
+    body.printday .ds-head, body.printday .ds-pack { column-span: all; }
   }
 
   @media print and (orientation: portrait) {
@@ -233,6 +324,9 @@
     .areasel { font-size: 15px; padding: 11px 10px; }
     .arearow { font-size: 13px; padding: 11px 10px; }
     .monthbtn { font-size: 14px; padding: 10px 12px; }
+    .safebtn { font-size: 14px; padding: 10px 14px; }
+    .closex { width: 44px; height: 44px; font-size: 19px; }
+    .modal .numrow .btn.numbtn { width: 60px; font-size: 22px; padding: 10px 0; }
 
     /* Kalender: schmalere Tage, Kärtchen auf zwei Zeilen umbrechbar */
     .calcol { padding: 10px 8px; }
@@ -240,6 +334,7 @@
     .dow { font-size: 10.5px; }
     .day { min-height: 72px; padding: 3px 2px; border-radius: 6px; }
     .daynum { font-size: 12px; margin-left: 1px; }
+    .needcount { font-size: 9.5px; padding: 1px 4px; }
     .chip {
       font-size: 10px; padding: 3px 4px; margin-bottom: 2px; border-left-width: 3px;
       white-space: normal; overflow: hidden; display: -webkit-box;
@@ -297,6 +392,8 @@
     <div class="phsub">Hamburger Yacht-Club e.V. im ADAC · Arbeitsplan</div>
   </div>
 </div>
+
+<div class="daysheet" id="daysheet"></div>
 
 <div class="wrap">
   <section class="listcol">
@@ -369,6 +466,14 @@ var AREA_COLORS = {
   "Sicherheit & Ordnung": "#A32D2D"
 };
 function areaColor(a){ return AREA_COLORS[a] || "#8b979f"; }
+
+// Vorgaben für Sicherheitsausrüstung
+var SAFETY = ["Sicherheitsschuhe", "Handschuhe", "Rettungsweste", "Helm", "Schutzbrille", "Gehörschutz", "Warnweste", "Absturzsicherung"];
+
+// Vorgaben plus selbst hinzugefügte Begriffe
+function safetyList(){
+  return SAFETY.concat(data.safetyExtra || []);
+}
 
 // Regeln für den Tag im Monat: [Kennung, Beschriftung, Wochentag (0=So,6=Sa), Nummer (-1 = letzter)]
 var RULES = [
@@ -469,20 +574,41 @@ var seed = [
   var rule = "sa1";
   if (/koordinieren|Fachfirma/i.test(t[1])) rule = "wt1";
   if (/Rasen mähen/i.test(t[1])) rule = "sa2";
-  return { id: uid(), area: t[0], title: t[1], months: t[2], tools: t[3] || "", prio: 2, rule: rule };
+  var safety = [], persons = 2;
+  var s = t[1];
+  if (/Steg|Kranen|Slipanlage|Wasserschläuche|Rettungsmittel/i.test(s)) safety.push("Rettungsweste");
+  if (/Kranen|Winterlager|Container|Planenbauten|Slipanlage/i.test(s)) safety.push("Sicherheitsschuhe");
+  if (/Dach|Dachrinnen|Leuchtmittel|Fenster/i.test(s)) safety.push("Absturzsicherung");
+  if (/Hecken|Laub|Rasen|Dachrinnen|Container/i.test(s)) safety.push("Handschuhe");
+  if (/Hecken|Rasen/i.test(s)) safety.push("Schutzbrille");
+  if (/Wege|Verkehrssicher/i.test(s)) safety.push("Warnweste");
+  if (/Kranen|Winterlager-Aufbau/i.test(s)) safety.push("Helm");
+  if (/Kranen|Winterlager|Frühjahrscheck|Herbstcheck/i.test(s)) persons = 4;
+  if (/koordinieren|Fachfirma|Sichtkontrolle|prüfen|inspizieren/i.test(s)) persons = 1;
+  return { id: uid(), area: t[0], title: t[1], months: t[2], tools: t[3] || "", prio: 2, rule: rule, safety: safety, persons: persons };
 });
 
 var data;
 try {
   var raw = localStorage.getItem(KEY);
-  data = raw ? JSON.parse(raw) : { tasks: seed, plan: [] };
-} catch (e) { data = { tasks: seed, plan: [] }; }
+  data = raw ? JSON.parse(raw) : { tasks: seed, plan: [], safetyExtra: [] };
+} catch (e) { data = { tasks: seed, plan: [], safetyExtra: [] }; }
 // Werkzeugangaben nachtragen, falls die Daten aus einer älteren Version stammen
+if (!data.safetyExtra) data.safetyExtra = [];
+// Bereits bei Arbeiten eingetragene Sonderbegriffe in die Auswahlliste übernehmen
+(data.tasks || []).forEach(function(t){
+  (t.safety || []).forEach(function(s){
+    if (SAFETY.indexOf(s) < 0 && data.safetyExtra.indexOf(s) < 0) data.safetyExtra.push(s);
+  });
+});
+
 data.tasks.forEach(function(t){
   var s = seed.find(function(x){ return x.title === t.title; });
   if (t.tools === undefined) t.tools = s ? s.tools : "";
   if (!t.area) t.area = s ? s.area : AREAS[AREAS.length - 1];
   if (t.rule === undefined) t.rule = s ? s.rule : (t.months && t.months.length ? "sa1" : "");
+  if (!t.safety) t.safety = s && s.safety ? s.safety.slice() : [];
+  if (!t.persons) t.persons = s && s.persons ? s.persons : 1;
 });
 
 function saveData(){
@@ -562,7 +688,7 @@ function renderList(){
         : (t.months.length > 0
             ? "üblich: " + t.months.map(function(m){ return MONTHS[m-1]; }).join(", ") + (t.rule ? " · " + ruleLabel(t.rule) : "")
             : "noch nicht terminiert");
-      if (t.tools) meta += "\n🧰 " + t.tools;
+      if (t.persons) meta += " · " + t.persons + (t.persons === 1 ? " Person" : " Personen");
       h += '<li class="work' + (state.selTask === t.id ? " sel" : "") + '" draggable="true" '
         + 'ondragstart="dragTask(event,\'' + t.id + '\')" onclick="pickTask(\'' + t.id + '\')">'
         + '<button class="prio p' + t.prio + '" title="Priorität: ' + prioName[t.prio] + ' (antippen zum Ändern)" onclick="cyclePrio(event,\'' + t.id + '\')"></button>'
@@ -688,7 +814,7 @@ function openEdit(ev, id){
     h += '<button class="btn priobtn pr' + p[0] + (t.prio === p[0] ? " on" : "") + '" onclick="edPrio=' + p[0] + ';markPrio(this)">' + p[1] + '</button>';
   });
   h += '</div>';
-  h += '<label class="lbl">Werkzeug & Hilfsmittel</label><input class="einput" id="ed-tools" value="' + esc(t.tools || "") + '" placeholder="z. B. Leiter, Handschuhe, Eimer">';
+  h += '<p class="rulehint" style="margin-top:12px">Werkzeug, Sicherheitsausrüstung und die Personenzahl werden im Kalender gepflegt: Termin antippen.</p>';
   h += '<label class="lbl">Wiederkehrend in diesen Monaten</label><div class="monthpick" id="ed-months"></div>';
   h += '<label class="lbl">Tag im Monat</label><select class="einput" id="ed-rule">';
   RULES.forEach(function(r){ h += '<option value="' + r[0] + '"' + ((t.rule || "") === r[0] ? " selected" : "") + '>' + r[1] + '</option>'; });
@@ -751,7 +877,6 @@ function saveEdit(id, alsoPlan){
   var title = document.getElementById("ed-title").value.trim();
   if (!title) return toast("Bitte Bezeichnung eingeben");
   t.title = title;
-  t.tools = document.getElementById("ed-tools").value.trim();
   t.area = document.getElementById("ed-area").value;
   t.prio = window.edPrio || t.prio;
   t.months = window.edMonths.slice();
@@ -844,6 +969,31 @@ function dropMonth(ev, m){
   setCalMode("month");
 }
 
+// Summe der benötigten Personen an einem Tag (offene Arbeiten)
+function dayNeed(iso){
+  var n = 0;
+  data.plan.forEach(function(p){
+    if (p.date !== iso || p.done) return;
+    var t = data.tasks.find(function(x){ return x.id === p.taskId; });
+    if (t) n += (t.persons || 1);
+  });
+  return n;
+}
+
+// Drucksymbol nur an Tagen mit geplanten Arbeiten (am Rechner beim Überfahren)
+function dayPrintBtn(iso){
+  if (!data.plan.some(function(p){ return p.date === iso; })) return "";
+  return '<button class="dayprint" title="Tagesblatt für diesen Tag drucken" aria-label="Tagesblatt drucken" '
+    + 'onclick="event.stopPropagation();printDayMenu(\'' + iso + '\')">🖨</button>';
+}
+
+function dayNeedBadge(iso){
+  var n = dayNeed(iso);
+  var min = 1;
+  if (n < min) return "";
+  return '<span class="needcount" title="Bedarf an diesem Tag: ' + n + (n === 1 ? ' Person' : ' Personen') + '">' + n + '</span>';
+}
+
 function renderCal(){
   var yearMode = state.calMode === "year";
   document.getElementById("calgrid").style.display = yearMode ? "none" : "grid";
@@ -874,14 +1024,15 @@ function renderCal(){
       + 'ondragover="event.preventDefault();this.classList.add(\'dragover\')" '
       + 'ondragleave="this.classList.remove(\'dragover\')" '
       + 'ondrop="dropDay(event,\'' + iso + '\')">'
-      + '<div class="daynum">' + d + '</div>';
+      + '<div class="daynum">' + d + dayPrintBtn(iso) + dayNeedBadge(iso) + '</div>';
     data.plan.filter(function(p){ return p.date === iso; }).forEach(function(p){
       var t = data.tasks.find(function(x){ return x.id === p.taskId; });
       if (!t) return;
       h += '<button class="chip' + (p.done ? " done" : "") + '" draggable="true" '
         + 'style="border-left-color:' + areaColor(t.area) + '" '
         + 'ondragstart="dragPlan(event,\'' + p.id + '\')" '
-        + 'onclick="chipMenu(event,\'' + p.id + '\')" title="' + esc((t.area ? t.area + " · " : "") + t.title) + '">' + esc(t.title) + '</button>';
+        + 'onclick="chipMenu(event,\'' + p.id + '\')" title="' + esc((t.area ? t.area + " · " : "") + t.title + " · " + (t.persons || 1) + ((t.persons || 1) === 1 ? " Person" : " Personen")) + '">' 
+        + esc(t.title) + ' <span class="pcount">' + (t.persons || 1) + '</span></button>';
     });
     h += '</div>';
   }
@@ -898,16 +1049,31 @@ function nav(step){
 }
 function navToday(){ state.y = now.getFullYear(); state.m = now.getMonth() + 1; render(); }
 
+// Verhindert, dass dieselbe Arbeit zweimal am selben Tag steht
+function alreadyOn(taskId, iso, exceptPlanId){
+  return data.plan.some(function(p){
+    return p.taskId === taskId && p.date === iso && p.id !== exceptPlanId;
+  });
+}
+
 function dayClick(iso){
   if (state.selTask){
-    data.plan.push({ id: uid(), taskId: state.selTask, date: iso, done: false });
     var t = data.tasks.find(function(x){ return x.id === state.selTask; });
+    if (alreadyOn(state.selTask, iso)){
+      toast((t ? t.title : "Diese Arbeit") + " steht am " + deOf(iso) + " bereits im Kalender");
+      return;
+    }
+    data.plan.push({ id: uid(), taskId: state.selTask, date: iso, done: false });
     toast((t ? t.title : "Arbeit") + " eingeplant am " + deOf(iso));
     state.selTask = null;
     saveData();
     if (isNarrow()) setView("list");
   } else if (state.movePlan){
     var p = data.plan.find(function(x){ return x.id === state.movePlan; });
+    if (p && alreadyOn(p.taskId, iso, p.id)){
+      toast("Diese Arbeit steht am " + deOf(iso) + " bereits im Kalender");
+      return;
+    }
     if (p){ p.date = iso; toast("Verschoben auf " + deOf(iso)); }
     state.movePlan = null;
     saveData();
@@ -922,12 +1088,21 @@ function dropDay(ev, iso){
   ev.currentTarget.classList.remove("dragover");
   var payload = ev.dataTransfer.getData("text/plain") || "";
   if (payload.indexOf("task:") === 0){
-    data.plan.push({ id: uid(), taskId: payload.slice(5), date: iso, done: false });
+    var tid = payload.slice(5);
+    if (alreadyOn(tid, iso)){
+      toast("Diese Arbeit steht am " + deOf(iso) + " bereits im Kalender");
+      return;
+    }
+    data.plan.push({ id: uid(), taskId: tid, date: iso, done: false });
     toast("Eingeplant am " + deOf(iso));
     state.selTask = null;
     saveData();
   } else if (payload.indexOf("plan:") === 0){
     var p = data.plan.find(function(x){ return x.id === payload.slice(5); });
+    if (p && alreadyOn(p.taskId, iso, p.id)){
+      toast("Diese Arbeit steht am " + deOf(iso) + " bereits im Kalender");
+      return;
+    }
     if (p){ p.date = iso; toast("Verschoben auf " + deOf(iso)); saveData(); }
   }
 }
@@ -938,14 +1113,119 @@ function chipMenu(ev, planId){
   var p = data.plan.find(function(x){ return x.id === planId; });
   if (!p) return;
   var t = data.tasks.find(function(x){ return x.id === p.taskId; });
-  var h = '<h2>' + esc(t ? t.title : "") + '</h2><p>' + deOf(p.date) + (t && t.tools ? '<br>🧰 ' + esc(t.tools) : '') + '</p>';
-  h += '<button class="btn primary" onclick="togglePlanDone(\'' + planId + '\')">' + (p.done ? "Doch nicht erledigt" : "✓ Erledigt") + '</button>';
+  if (!t) return;
+  window.chipPlanId = planId;
+
+  var h = '<div class="modalhead">';
+  h += '<div><h2>' + esc(t.title) + '</h2><p>' + deOf(p.date) + (t.area ? ' · ' + esc(t.area) : '') + '</p></div>';
+  h += '<button class="closex" title="Schließen" aria-label="Schließen" onclick="closeChip()">✕</button>';
+  h += '</div>';
+
+  h += '<label class="lbl">🧰 Werkzeug &amp; Material</label>';
+  h += '<textarea class="einput ta" id="cm-tools" rows="2" placeholder="z. B. Leiter, Eimer, Handschuhe">' + esc(t.tools || "") + '</textarea>';
+
+  h += '<label class="lbl">🦺 Sicherheitsausrüstung</label>';
+  h += '<div class="safepick" id="cm-safe"></div>';
+  h += '<input class="einput" id="cm-safe-extra" placeholder="Weitere Ausrüstung eintragen (wird gemerkt)">';
+
+  h += '<label class="lbl">👥 Benötigte Personen</label>';
+  h += '<div class="numrow">';
+  h += '<button class="btn ghost numbtn" onclick="stepPersons(-1)" aria-label="weniger">−</button>';
+  h += '<input class="einput numin" id="cm-persons" type="number" min="1" max="30" value="' + (t.persons || 1) + '">';
+  h += '<button class="btn ghost numbtn" onclick="stepPersons(1)" aria-label="mehr">+</button>';
+  h += '</div>';
+
+  h += '<button class="btn primary" style="margin-top:16px" onclick="saveChip()">Angaben speichern</button>';
+
+  h += '<div class="actionsep">Termin am ' + deOf(p.date) + '</div>';
+  h += '<button class="btn ghost" onclick="togglePlanDone(\'' + planId + '\')">' + (p.done ? "Doch nicht erledigt" : "✓ Als erledigt markieren") + '</button>';
   h += '<button class="btn ghost" onclick="startMove(\'' + planId + '\')">→ Auf anderen Tag verschieben</button>';
   h += '<button class="btn danger" onclick="removePlan(\'' + planId + '\')">Im Kalender löschen</button>';
-  h += '<button class="btn ghost" onclick="closeModal()">Schließen</button>';
+
   document.getElementById("modal").innerHTML = h;
   openModal();
+  window.cmSafety = (t.safety || []).slice();
+  window.cmStart = chipSnapshot();
+  paintSafety();
 }
+
+// Momentaufnahme der Eingaben, um Änderungen zu erkennen
+function chipSnapshot(){
+  var tools = document.getElementById("cm-tools");
+  var pers = document.getElementById("cm-persons");
+  var extra = document.getElementById("cm-safe-extra");
+  if (!tools) return "";
+  return tools.value + "|" + pers.value + "|" + (extra ? extra.value : "") + "|" + (window.cmSafety || []).slice().sort().join(",");
+}
+
+function closeChip(){
+  if (window.cmStart !== undefined && chipSnapshot() !== window.cmStart){
+    if (!confirm("Die Änderungen an Werkzeug, Ausrüstung oder Personenzahl wurden noch nicht gespeichert. Trotzdem schließen?")) return;
+  }
+  window.cmStart = undefined;
+  closeModal();
+}
+
+function paintSafety(){
+  var box = document.getElementById("cm-safe");
+  if (!box) return;
+  box.innerHTML = safetyList().map(function(s){
+    var on = window.cmSafety.indexOf(s) >= 0;
+    var learned = SAFETY.indexOf(s) < 0;
+    return '<button type="button" class="safebtn' + (on ? " on" : "") + '" onclick="toggleSafety(\'' + s.replace(/'/g, "") + '\')">'
+      + (on ? '<span class="tick">✓</span>' : '') + esc(s)
+      + (learned ? '<span class="rmx" title="Begriff aus der Liste entfernen" onclick="forgetSafety(event,\'' + s.replace(/'/g, "") + '\')">✕</span>' : '')
+      + '</button>';
+  }).join("");
+}
+
+function forgetSafety(ev, s){
+  ev.stopPropagation();
+  if (!confirm('„' + s + '" aus der Auswahlliste entfernen? Bereits eingetragene Arbeiten behalten die Angabe.')) return;
+  data.safetyExtra = (data.safetyExtra || []).filter(function(x){ return x !== s; });
+  var i = window.cmSafety.indexOf(s);
+  if (i >= 0) window.cmSafety.splice(i, 1);
+  paintSafety();
+  saveQuiet();
+}
+
+function toggleSafety(s){
+  var i = window.cmSafety.indexOf(s);
+  if (i >= 0) window.cmSafety.splice(i, 1); else window.cmSafety.push(s);
+  paintSafety();
+}
+
+function stepPersons(d){
+  var el = document.getElementById("cm-persons");
+  if (!el) return;
+  var v = parseInt(el.value, 10) || 1;
+  v = Math.max(1, Math.min(30, v + d));
+  el.value = v;
+}
+
+function saveChip(){
+  var planId = window.chipPlanId;
+  var p = data.plan.find(function(x){ return x.id === planId; });
+  if (!p) return;
+  var t = data.tasks.find(function(x){ return x.id === p.taskId; });
+  if (!t) return;
+  t.tools = document.getElementById("cm-tools").value.trim();
+  var extra = document.getElementById("cm-safe-extra").value.split(",")
+    .map(function(s){ return s.trim(); })
+    .filter(function(s){ return s.length > 0; });
+  // Neue Begriffe merken, damit sie künftig als Knopf erscheinen
+  extra.forEach(function(s){
+    if (safetyList().indexOf(s) < 0) data.safetyExtra.push(s);
+    if (window.cmSafety.indexOf(s) < 0) window.cmSafety.push(s);
+  });
+  t.safety = window.cmSafety.slice();
+  t.persons = Math.max(1, Math.min(30, parseInt(document.getElementById("cm-persons").value, 10) || 1));
+  window.cmStart = undefined;
+  closeModal();
+  toast(extra.length > 0 ? "Gespeichert – neue Ausrüstung wurde gemerkt" : "Angaben gespeichert");
+  saveData();
+}
+
 function openModal(){
   window.lastFocus = document.activeElement;
   document.getElementById("overlay").classList.add("open");
@@ -964,29 +1244,42 @@ function closeModal(){
   window.lastFocus = null;
 }
 
-document.getElementById("overlay").addEventListener("click", function(e){ if (e.target === this) closeModal(); });
+document.getElementById("overlay").addEventListener("click", function(e){
+  if (e.target !== this) return;
+  if (window.cmStart !== undefined) closeChip(); else closeModal();
+});
 
 // Escape schließt Fenster bzw. bricht eine Auswahl ab
 document.addEventListener("keydown", function(e){
   if (e.key !== "Escape" && e.key !== "Esc") return;
-  if (document.getElementById("overlay").classList.contains("open")) closeModal();
+  if (document.getElementById("overlay").classList.contains("open")){
+    if (window.cmStart !== undefined) closeChip(); else closeModal();
+  }
   else if (state.selTask || state.movePlan) clearSel();
 });
 
 function togglePlanDone(id){
   var p = data.plan.find(function(x){ return x.id === id; });
   if (p) p.done = !p.done;
+  window.cmStart = undefined;
   closeModal();
   saveData();
 }
 function startMove(id){
   state.movePlan = id; state.selTask = null;
+  window.cmStart = undefined;
   closeModal();
   render();
 }
 function removePlan(id){
+  var p = data.plan.find(function(x){ return x.id === id; });
+  var t = p ? data.tasks.find(function(x){ return x.id === p.taskId; }) : null;
+  var name = t ? t.title : "Dieser Termin";
+  if (!confirm('„' + name + '" am ' + (p ? deOf(p.date) : "") + " aus dem Kalender nehmen? Die Arbeit selbst bleibt in der Liste erhalten.")) return;
   data.plan = data.plan.filter(function(x){ return x.id !== id; });
+  window.cmStart = undefined;
   closeModal();
+  toast("Termin gelöscht");
   saveData();
 }
 
@@ -1067,9 +1360,10 @@ function buildXlsx(rows){
   var sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
     + '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
     + '<cols><col min="1" max="1" width="15" customWidth="1"/><col min="2" max="2" width="11" customWidth="1"/>'
-    + '<col min="3" max="3" width="20" customWidth="1"/><col min="4" max="4" width="46" customWidth="1"/>'
-    + '<col min="5" max="5" width="11" customWidth="1"/><col min="6" max="6" width="42" customWidth="1"/>'
-    + '<col min="7" max="7" width="11" customWidth="1"/></cols><sheetData>';
+    + '<col min="3" max="3" width="20" customWidth="1"/><col min="4" max="4" width="44" customWidth="1"/>'
+    + '<col min="5" max="5" width="11" customWidth="1"/><col min="6" max="6" width="38" customWidth="1"/>'
+    + '<col min="7" max="7" width="34" customWidth="1"/><col min="8" max="8" width="10" customWidth="1"/>'
+    + '<col min="9" max="9" width="11" customWidth="1"/></cols><sheetData>';
   rows.forEach(function(r, ri){
     sheet += '<row r="' + (ri + 1) + '">';
     r.forEach(function(c, ci){
@@ -1077,7 +1371,7 @@ function buildXlsx(rows){
     });
     sheet += '</row>';
   });
-  sheet += '</sheetData><autoFilter ref="A1:G' + rows.length + '"/></worksheet>';
+  sheet += '</sheetData><autoFilter ref="A1:I' + rows.length + '"/></worksheet>';
 
   var styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
     + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
@@ -1185,13 +1479,122 @@ function unesc(s){ return String(s).replace(/&#(\d+);/g, function(_, n){ return 
 function printMenu(){
   var isYear = state.calMode === "year";
   var what = isYear ? "Jahresübersicht " + state.y : MONTHS_LONG[state.m - 1] + " " + state.y;
-  var h = '<h2>Drucken</h2><p>Gedruckt wird: <strong>' + esc(what) + '</strong></p>';
-  h += '<button class="btn primary" onclick="doPrint(\'landscape\')">Querformat (empfohlen' + (isYear ? ' für das Jahr' : '') + ')</button>';
-  h += '<button class="btn ghost" onclick="doPrint(\'portrait\')">Hochformat</button>';
-  h += '<p style="margin:10px 0 0;font-size:12px">Gedruckt wird immer die Ansicht, die gerade zu sehen ist. Für einen anderen Monat oder das ganze Jahr bitte vorher umschalten. Die Arbeitsliste links wird nicht mitgedruckt.</p>';
+  var h = '<h2>Drucken</h2><p>Aktuelle Ansicht: <strong>' + esc(what) + '</strong></p>';
+  h += '<button class="btn primary" onclick="doPrint(\'landscape\')">Übersicht quer (empfohlen' + (isYear ? ' für das Jahr' : '') + ')</button>';
+  h += '<button class="btn ghost" onclick="doPrint(\'portrait\')">Übersicht hoch</button>';
+
+  if (!isYear){
+    var tage = {};
+    data.plan.forEach(function(p){
+      if (p.date.slice(0, 7) === state.y + "-" + pad(state.m)) tage[p.date] = (tage[p.date] || 0) + 1;
+    });
+    var liste = Object.keys(tage).sort();
+    h += '<div class="actionsep">Tagesblatt mit Werkzeug, Ausrüstung und Personen</div>';
+    if (liste.length === 0){
+      h += '<p class="rulehint" style="margin:0">In diesem Monat ist noch nichts geplant.</p>';
+    } else {
+      h += '<select class="einput" id="pr-day">';
+      liste.forEach(function(iso){
+        h += '<option value="' + iso + '">' + fmtDay(iso) + ' · ' + tage[iso] + (tage[iso] === 1 ? " Arbeit" : " Arbeiten") + '</option>';
+      });
+      h += '</select>';
+      h += '<button class="btn ghost" onclick="printDay(document.getElementById(\'pr-day\').value)">🖨 Tagesblatt drucken</button>';
+    }
+  }
+
+  h += '<p style="margin:12px 0 0;font-size:12px">Für einen anderen Monat oder das ganze Jahr bitte vorher umschalten. Die Arbeitsliste links wird nie mitgedruckt.</p>';
   h += '<button class="btn ghost" style="margin-top:10px" onclick="closeModal()">Abbrechen</button>';
   document.getElementById("modal").innerHTML = h;
   openModal();
+}
+
+function fmtDay(iso){
+  var d = new Date(iso + "T12:00:00");
+  var wd = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"][d.getDay()];
+  return wd + ", " + deOf(iso);
+}
+
+// Kurzes Menü direkt vom Kalendertag aus
+function printDayMenu(iso){
+  var h = '<h2>Tagesblatt</h2><p>' + esc(fmtDay(iso)) + '</p>';
+  h += '<button class="btn primary" onclick="printDay(\'' + iso + '\')">🖨 Drucken (hoch)</button>';
+  h += '<button class="btn ghost" onclick="printDay(\'' + iso + '\', \'landscape\')">Drucken (quer)</button>';
+  h += '<button class="btn ghost" style="margin-top:10px" onclick="closeModal()">Abbrechen</button>';
+  document.getElementById("modal").innerHTML = h;
+  openModal();
+}
+
+// Baut das Tagesblatt auf und druckt es
+function printDay(iso, orientation){
+  closeModal();
+  var eintraege = data.plan.filter(function(p){ return p.date === iso; })
+    .map(function(p){ return { p: p, t: data.tasks.find(function(x){ return x.id === p.taskId; }) }; })
+    .filter(function(e){ return e.t; });
+  if (eintraege.length === 0) return toast("An diesem Tag ist nichts geplant");
+
+  // Reihenfolge: nach Rubrik, dann Priorität
+  eintraege.sort(function(a, b){
+    var ia = AREAS.indexOf(a.t.area), ib = AREAS.indexOf(b.t.area);
+    return ia - ib || a.t.prio - b.t.prio || a.t.title.localeCompare(b.t.title);
+  });
+
+  var summe = 0, packWerk = {}, packSafe = {};
+  eintraege.forEach(function(e){
+    if (!e.p.done) summe += (e.t.persons || 1);
+    (e.t.tools || "").split(",").forEach(function(s){
+      s = s.trim(); if (s) packWerk[s] = true;
+    });
+    (e.t.safety || []).forEach(function(s){ if (s) packSafe[s] = true; });
+  });
+
+  var h = '<div class="ds-head">';
+  h += '<img class="ds-logo" src="' + LOGO_B64 + '" alt="">';
+  h += '<div class="ds-titles"><div class="ds-date">' + esc(fmtDay(iso)) + '</div>';
+  h += '<div class="ds-club">Hamburger Yacht-Club e.V. im ADAC · Arbeitsdienst</div></div>';
+  h += '<div class="ds-need"><span class="ds-neednum">' + summe + '</span><span class="ds-needlbl">Personen<br>benötigt</span></div>';
+  h += '</div>';
+
+  // Packliste oben
+  h += '<div class="ds-pack">';
+  h += '<div class="ds-packcol"><div class="ds-packtitle">🧰 Werkzeug &amp; Material bereitlegen</div><div class="ds-packlist">'
+    + (Object.keys(packWerk).length ? Object.keys(packWerk).map(function(s){ return '<span class="ds-item">☐ ' + esc(s) + '</span>'; }).join("") : '<span class="ds-none">nichts hinterlegt</span>')
+    + '</div></div>';
+  h += '<div class="ds-packcol"><div class="ds-packtitle">🦺 Sicherheitsausrüstung bereitlegen</div><div class="ds-packlist">'
+    + (Object.keys(packSafe).length ? Object.keys(packSafe).map(function(s){ return '<span class="ds-item">☐ ' + esc(s) + '</span>'; }).join("") : '<span class="ds-none">nichts hinterlegt</span>')
+    + '</div></div>';
+  h += '</div>';
+
+  // Arbeiten einzeln
+  h += '<div class="ds-worktitle">Arbeiten an diesem Tag</div>';
+  eintraege.forEach(function(e){
+    h += '<div class="ds-work" style="border-left-color:' + areaColor(e.t.area) + '">';
+    h += '<div class="ds-wrow"><span class="ds-wname">' + esc(e.t.title) + (e.p.done ? ' <span class="ds-done">erledigt</span>' : '') + '</span>';
+    h += '<span class="ds-wpers">' + (e.t.persons || 1) + ' ' + ((e.t.persons || 1) === 1 ? "Person" : "Personen") + '</span></div>';
+    h += '<div class="ds-warea">' + esc(e.t.area || "") + '</div>';
+    if (e.t.tools) h += '<div class="ds-wline"><b>Werkzeug:</b> ' + esc(e.t.tools) + '</div>';
+    if ((e.t.safety || []).length) h += '<div class="ds-wline"><b>Ausrüstung:</b> ' + esc(e.t.safety.join(", ")) + '</div>';
+    h += '<div class="ds-names"><b>Wer macht mit:</b><span class="ds-lines"></span></div>';
+    h += '</div>';
+  });
+
+  h += '<div class="ds-signup"><div class="ds-signtitle">Ich bin dabei am ' + deOf(iso) + '</div>';
+  for (var i = 0; i < 12; i++) h += '<div class="ds-signline"><span class="ds-nr">' + (i + 1) + '.</span></div>';
+  h += '<div class="ds-foot">Bitte eintragen oder beim Arbeitsdienst-Verantwortlichen melden.</div></div>';
+
+  document.getElementById("daysheet").innerHTML = h;
+
+  var style = document.getElementById("pagerule");
+  if (!style){
+    style = document.createElement("style");
+    style.id = "pagerule";
+    document.head.appendChild(style);
+  }
+  style.textContent = "@page { size: A4 " + (orientation || "portrait") + "; margin: 12mm; }";
+  document.body.classList.add("printday");
+  setTimeout(function(){
+    window.print();
+    setTimeout(function(){ document.body.classList.remove("printday"); }, 400);
+  }, 60);
 }
 
 function doPrint(orientation){
@@ -1228,19 +1631,19 @@ function excelMenu(){
 function planRows(){
   var prioName = { 1: "hoch", 2: "normal", 3: "niedrig" };
   var wds = ["So","Mo","Di","Mi","Do","Fr","Sa"];
-  var rows = [["Datum","Wochentag","Rubrik","Arbeit","Priorität","Werkzeug & Hilfsmittel","Status"]];
+  var rows = [["Datum","Wochentag","Rubrik","Arbeit","Priorität","Werkzeug & Material","Sicherheitsausrüstung","Personen","Status"]];
   data.plan.slice().sort(function(a,b){ return a.date.localeCompare(b.date); }).forEach(function(p){
     var t = data.tasks.find(function(x){ return x.id === p.taskId; });
     if (!t) return;
     var d = new Date(p.date + "T12:00:00");
-    rows.push([deOf(p.date), wds[d.getDay()], t.area || "", t.title, prioName[t.prio], t.tools || "", p.done ? "erledigt" : "offen"]);
+    rows.push([deOf(p.date), wds[d.getDay()], t.area || "", t.title, prioName[t.prio], t.tools || "", (t.safety || []).join(", "), String(t.persons || 1), p.done ? "erledigt" : "offen"]);
   });
   var planned = {};
   data.plan.forEach(function(p){ planned[p.taskId] = true; });
   data.tasks.filter(function(t){ return !planned[t.id]; })
     .sort(function(a,b){ return a.prio - b.prio || a.title.localeCompare(b.title); })
     .forEach(function(t){
-      rows.push(["nicht terminiert", "", t.area || "", t.title, prioName[t.prio], t.tools || "", "offen"]);
+      rows.push(["nicht terminiert", "", t.area || "", t.title, prioName[t.prio], t.tools || "", (t.safety || []).join(", "), String(t.persons || 1), "offen"]);
     });
   return rows;
 }
@@ -1376,15 +1779,19 @@ function applyRows(rows){
     var area = String(r[2] || "").trim();
     var prio = prioMap[String(r[4] || "").trim().toLowerCase()] || 2;
     var tools = String(r[5] || "").trim();
-    var done = String(r[6] || "").trim().toLowerCase() === "erledigt";
+    var safety = String(r[6] || "").split(",").map(function(x){ return x.trim(); }).filter(Boolean);
+    var persons = parseInt(String(r[7] || "").trim(), 10);
+    var done = String(r[8] || "").trim().toLowerCase() === "erledigt";
     var t = data.tasks.find(function(x){ return x.title.toLowerCase() === title.toLowerCase(); });
     if (!t){
-      t = { id: uid(), area: area || AREAS[AREAS.length - 1], title: title, months: [], tools: tools, prio: prio };
+      t = { id: uid(), area: area || AREAS[AREAS.length - 1], title: title, months: [], tools: tools, prio: prio, rule: "", safety: safety, persons: persons > 0 ? persons : 1 };
       data.tasks.push(t);
       nTasks++;
     } else {
       if (tools) t.tools = tools;
       if (area) t.area = area;
+      if (safety.length) t.safety = safety;
+      if (persons > 0) t.persons = persons;
       t.prio = prio;
     }
     var m = dateDe.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
