@@ -73,7 +73,8 @@
   .btn.primary:hover { background: var(--navy-deep); }
   .btn.ghost { background: transparent; color: var(--navy); border-color: #c6ced4; }
   .btn.small { font-size: 12.5px; padding: 5px 10px; }
-  .calgrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .calgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+  .day { min-width: 0; }
   .calspacer { flex: 1; }
   .modeswitch { display: flex; gap: 3px; background: #eef2f5; border-radius: 8px; padding: 3px; }
   .msbtn {
@@ -132,6 +133,42 @@
   }
   .chip.done { text-decoration: line-through; color: #8b979f; background: #e6f2ec; border-left-color: var(--ok); }
   .chip:hover { filter: brightness(.96); }
+  .chip.late { box-shadow: 0 0 0 1.5px var(--signal) inset; background: #fdf0f0; }
+  .chip.skip { text-decoration: line-through; color: #8b979f; background: #f1f3f4; border-left-color: #b8c2ca !important; }
+
+  /* Was steht an */
+  .duebar { max-width: 1240px; margin: 0 auto; padding: 12px 14px 0; }
+  .dueinner { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .duetitle { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: var(--navy); margin-right: 4px; }
+  .duebtn { appearance: none; cursor: pointer; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink);
+    background: #fff; border: 1px solid #c6ced4; border-radius: 18px; padding: 6px 13px 6px 10px; display: inline-flex; align-items: center; gap: 7px; }
+  .duebtn b { font-size: 14.5px; }
+  .duebtn.zero { opacity: .55; cursor: default; }
+  .duebtn.on { box-shadow: 0 0 0 2px var(--rope); }
+  .duedot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; flex: none; background: #b8c2ca; }
+  .d-late .duedot { background: var(--signal); } .d-week .duedot { background: var(--amber); } .d-prep .duedot { background: var(--navy); }
+  .d-late:not(.zero) { border-color: var(--signal); }
+  .dueok { font-size: 13px; color: var(--ok); font-weight: 600; }
+  .bakinfo { margin-left: auto; font-size: 12.5px; color: #55636c; display: inline-flex; align-items: center; gap: 7px; }
+  .bakinfo.warn { color: #8a5a00; font-weight: 600; }
+  .bakinfo .duedot { background: var(--amber); }
+  @media (max-width: 640px) { .bakinfo { margin-left: 0; flex-basis: 100%; } }
+  .duepanel { background: #fff; border: 1px solid #dde2e6; border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
+  .duehead { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 13px; color: #55636c; margin-bottom: 4px; }
+  .duehead b { color: var(--navy); }
+  .closex.small { width: 30px; height: 30px; font-size: 14px; }
+  .duerow { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px dashed #e0e5e9; font-size: 14px; flex-wrap: wrap; }
+  .duedate { flex: 0 0 104px; font-weight: 700; color: var(--navy); font-size: 13px; }
+  .dueago { display: block; font-weight: 400; color: var(--signal); font-size: 11.5px; }
+  .duewhat { flex: 1 1 220px; min-width: 0; }
+  .dueacts { display: flex; gap: 5px; flex-wrap: wrap; }
+  @media (max-width: 640px) {
+    .duebar { padding: 10px 10px 0; }
+    .duetitle { flex-basis: 100%; }
+    .duebtn { font-size: 13px; padding: 8px 11px 8px 9px; }
+    .duedate { flex-basis: 100%; }
+    .dueago { display: inline; margin-left: 8px; }
+  }
 
   /* Menü / Overlay */
   .overlay { position: fixed; inset: 0; background: rgba(11,33,56,.55); display: none; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
@@ -212,7 +249,7 @@
 
   @media print {
     body { background: #fff; }
-    header.top, .hintbar, .viewswitch, .listcol, .calnav, .credit,
+    header.top, .hintbar, .duebar, .viewswitch, .listcol, .calnav, .credit,
     .toast, .overlay, #suggestwrap { display: none !important; }
     .printhead {
       display: flex; align-items: center; gap: 12px;
@@ -373,7 +410,8 @@
   <img class="logo" id="logo" alt="Stander des HYC">
   <h1>HYC · Arbeitsplaner</h1>
   <button class="btn ghost" style="color:#fff;border-color:rgba(255,255,255,.5)" onclick="printMenu()" title="Plan ausdrucken">Drucken</button>
-  <button class="btn ghost" style="color:#fff;border-color:rgba(255,255,255,.5)" onclick="excelMenu()" title="Excel-Datei speichern oder einlesen">Excel</button>
+  <button class="btn ghost" style="color:#fff;border-color:rgba(255,255,255,.5)" onclick="excelMenu()" title="Excel-Datei und Sicherung speichern oder einlesen">Daten</button>
+  <input type="file" id="backupfile" accept=".json" style="display:none" onchange="restoreBackup(this.files[0]);this.value=''">
   <input type="file" id="importfile" accept=".xlsx,.csv" style="display:none" onchange="importExcel(this.files[0]);this.value=''">
   <button class="btn ghost" style="color:#fff;border-color:rgba(255,255,255,.5)" onclick="location.reload()">↻</button>
 </header>
@@ -384,6 +422,8 @@
 </div>
 
 <div class="hintbar" id="hintbar">Arbeit links antippen, dann einen Tag im Kalender antippen – oder einfach mit der Maus hinüberziehen.</div>
+
+<div class="duebar" id="duebar"></div>
 
 <div class="printhead" id="printhead">
   <img class="printlogo" id="printlogo" alt="">
@@ -526,6 +566,8 @@ function planTaskForYear(t, y){
     var d = ruleDay(t.rule, y, m);
     if (!d) return;
     var iso = isoOf(y, m, d);
+    // Vergangene Tage nicht mehr eintragen, sonst stünden sie sofort als überfällig da
+    if (iso < todayIso()) return;
     var exists = data.plan.find(function(p){ return p.taskId === t.id && p.date.slice(0, 7) === iso.slice(0, 7); });
     if (exists) return;
     data.plan.push({ id: uid(), taskId: t.id, date: iso, done: false });
@@ -617,7 +659,7 @@ function saveData(){
 }
 
 var now = new Date();
-var state = { y: now.getFullYear(), m: now.getMonth() + 1, selTask: null, movePlan: null, view: "list", closed: {}, order: [], calMode: "month" };
+var state = { y: now.getFullYear(), m: now.getMonth() + 1, selTask: null, movePlan: null, view: "list", closed: {}, order: [], calMode: "month", dueOpen: "" };
 
 function toast(msg){
   var t = document.getElementById("toast");
@@ -681,7 +723,7 @@ function renderList(){
       + esc(area) + '<span class="areacount">' + tasks.length + '</span></li>';
     if (collapsed) return;
     tasks.forEach(function(t){
-      var planned = data.plan.filter(function(p){ return p.taskId === t.id && !p.done; })
+      var planned = data.plan.filter(function(p){ return p.taskId === t.id && !p.done && !p.skip; })
         .map(function(p){ return p.date; }).sort();
       var meta = planned.length > 0
         ? "geplant: " + planned.slice(0, 3).map(deOf).join(", ") + (planned.length > 3 ? " …" : "")
@@ -754,7 +796,7 @@ function cyclePrio(ev, id){
 
 // Speichern ohne Neuzeichnen
 function saveQuiet(){
-  try { localStorage.setItem(KEY, JSON.stringify(data)); }
+  try { localStorage.setItem(KEY, JSON.stringify(data)); markTime("-chg"); }
   catch (e) { toast("Speichern im Browser nicht möglich"); }
 }
 
@@ -973,7 +1015,7 @@ function dropMonth(ev, m){
 function dayNeed(iso){
   var n = 0;
   data.plan.forEach(function(p){
-    if (p.date !== iso || p.done) return;
+    if (p.date !== iso || p.done || p.skip) return;
     var t = data.tasks.find(function(x){ return x.id === p.taskId; });
     if (t) n += (t.persons || 1);
   });
@@ -1028,7 +1070,7 @@ function renderCal(){
     data.plan.filter(function(p){ return p.date === iso; }).forEach(function(p){
       var t = data.tasks.find(function(x){ return x.id === p.taskId; });
       if (!t) return;
-      h += '<button class="chip' + (p.done ? " done" : "") + '" draggable="true" '
+      h += '<button class="chip' + (p.done ? " done" : "") + (p.skip ? " skip" : "") + (isLate(p) ? " late" : "") + '" draggable="true" '
         + 'style="border-left-color:' + areaColor(t.area) + '" '
         + 'ondragstart="dragPlan(event,\'' + p.id + '\')" '
         + 'onclick="chipMenu(event,\'' + p.id + '\')" title="' + esc((t.area ? t.area + " · " : "") + t.title + " · " + (t.persons || 1) + ((t.persons || 1) === 1 ? " Person" : " Personen")) + '">' 
@@ -1140,6 +1182,7 @@ function chipMenu(ev, planId){
   h += '<div class="actionsep">Termin am ' + deOf(p.date) + '</div>';
   h += '<button class="btn ghost" onclick="togglePlanDone(\'' + planId + '\')">' + (p.done ? "Doch nicht erledigt" : "✓ Als erledigt markieren") + '</button>';
   h += '<button class="btn ghost" onclick="startMove(\'' + planId + '\')">→ Auf anderen Tag verschieben</button>';
+  h += '<button class="btn ghost" onclick="togglePlanSkip(\'' + planId + '\')">' + (p.skip ? "Findet doch statt" : "⊘ Entfällt") + '</button>';
   h += '<button class="btn danger" onclick="removePlan(\'' + planId + '\')">Im Kalender löschen</button>';
 
   document.getElementById("modal").innerHTML = h;
@@ -1169,18 +1212,20 @@ function closeChip(){
 function paintSafety(){
   var box = document.getElementById("cm-safe");
   if (!box) return;
-  box.innerHTML = safetyList().map(function(s){
+  box.innerHTML = safetyList().map(function(s, i){
     var on = window.cmSafety.indexOf(s) >= 0;
     var learned = SAFETY.indexOf(s) < 0;
-    return '<button type="button" class="safebtn' + (on ? " on" : "") + '" onclick="toggleSafety(\'' + s.replace(/'/g, "") + '\')">'
+    return '<button type="button" class="safebtn' + (on ? " on" : "") + '" onclick="toggleSafety(' + i + ')">'
       + (on ? '<span class="tick">✓</span>' : '') + esc(s)
-      + (learned ? '<span class="rmx" title="Begriff aus der Liste entfernen" onclick="forgetSafety(event,\'' + s.replace(/'/g, "") + '\')">✕</span>' : '')
+      + (learned ? '<span class="rmx" title="Begriff aus der Liste entfernen" onclick="forgetSafety(event,' + i + ')">✕</span>' : '')
       + '</button>';
   }).join("");
 }
 
-function forgetSafety(ev, s){
+function forgetSafety(ev, idx){
   ev.stopPropagation();
+  var s = safetyList()[idx];
+  if (s === undefined) return;
   if (!confirm('„' + s + '" aus der Auswahlliste entfernen? Bereits eingetragene Arbeiten behalten die Angabe.')) return;
   data.safetyExtra = (data.safetyExtra || []).filter(function(x){ return x !== s; });
   var i = window.cmSafety.indexOf(s);
@@ -1189,7 +1234,9 @@ function forgetSafety(ev, s){
   saveQuiet();
 }
 
-function toggleSafety(s){
+function toggleSafety(idx){
+  var s = safetyList()[idx];
+  if (s === undefined) return;
   var i = window.cmSafety.indexOf(s);
   if (i >= 0) window.cmSafety.splice(i, 1); else window.cmSafety.push(s);
   paintSafety();
@@ -1258,9 +1305,16 @@ document.addEventListener("keydown", function(e){
   else if (state.selTask || state.movePlan) clearSel();
 });
 
+function togglePlanSkip(id){
+  var p = data.plan.find(function(x){ return x.id === id; });
+  if (p){ p.skip = !p.skip; if (p.skip) p.done = false; }
+  window.cmStart = undefined;
+  closeModal();
+  saveData();
+}
 function togglePlanDone(id){
   var p = data.plan.find(function(x){ return x.id === id; });
-  if (p) p.done = !p.done;
+  if (p){ p.done = !p.done; if (p.done) p.skip = false; }
   window.cmStart = undefined;
   closeModal();
   saveData();
@@ -1299,6 +1353,140 @@ function suggestPlan(span){
     ? n + " Termine aus " + Object.keys(k).length + " Arbeiten für " + span2 + " eingetragen – alles verschiebbar"
     : "Für " + span2 + " ist bereits alles eingetragen");
   saveData();
+}
+
+// ---------------- Was steht an: überfällig, diese Woche, jetzt vorbereiten ----------------
+
+function todayIso(){ return isoOf(now.getFullYear(), now.getMonth() + 1, now.getDate()); }
+function addDays(iso, n){
+  var d = new Date(iso + "T12:00:00");
+  d.setDate(d.getDate() + n);
+  return isoOf(d.getFullYear(), d.getMonth() + 1, d.getDate());
+}
+function daysBetween(a, b){
+  return Math.round((new Date(a + "T12:00:00") - new Date(b + "T12:00:00")) / 86400000);
+}
+// Termin vorbei und weder erledigt noch entfallen
+function isLate(p){ return !p.done && !p.skip && p.date < todayIso(); }
+
+function dueLists(){
+  var t = todayIso(), w = addDays(t, 7), m = addDays(t, 21);
+  var out = { late: [], week: [], prep: [] };
+  data.plan.forEach(function(p){
+    if (p.done || p.skip) return;
+    var task = data.tasks.find(function(x){ return x.id === p.taskId; });
+    if (!task) return;
+    var it = { p: p, t: task, d: p.date };
+    if (p.date < t) out.late.push(it);
+    else if (p.date <= w) out.week.push(it);
+    else if (p.date <= m) out.prep.push(it);
+  });
+  ["late", "week", "prep"].forEach(function(k){ out[k].sort(function(a, b){ return a.d.localeCompare(b.d); }); });
+  return out;
+}
+
+function renderDue(){
+  var box = document.getElementById("duebar");
+  if (!box) return;
+  var L = dueLists();
+  var defs = [["late", "Überfällig", "Termin vorbei, noch nicht erledigt"], ["week", "Diese Woche", "fällig in den nächsten 7 Tagen"], ["prep", "Jetzt vorbereiten", "Werkzeug, Material und Helfer für die Arbeiten in 2 bis 3 Wochen"]];
+  if (state.dueOpen && L[state.dueOpen].length === 0) state.dueOpen = "";
+  var h = '<div class="dueinner"><span class="duetitle">Was steht an</span>';
+  defs.forEach(function(d){
+    var n = L[d[0]].length;
+    h += '<button class="duebtn d-' + d[0] + (n ? '' : ' zero') + (state.dueOpen === d[0] ? ' on' : '') + '" onclick="toggleDue(\'' + d[0] + '\')" title="' + d[2] + '"' + (n ? '' : ' disabled') + '>'
+      + '<span class="duedot"></span>' + d[1] + ' <b>' + n + '</b></button>';
+  });
+  if (!L.late.length && !L.week.length && !L.prep.length) h += '<span class="dueok">Alles im Plan</span>';
+  h += backupHtml() + '</div>';
+  if (state.dueOpen){
+    var d0 = defs.filter(function(d){ return d[0] === state.dueOpen; })[0];
+    h += '<div class="duepanel"><div class="duehead"><span><b>' + d0[1] + '</b> · ' + d0[2] + '</span>'
+      + '<button class="closex small" aria-label="Schließen" onclick="toggleDue(\'\')">✕</button></div>';
+    if (state.dueOpen === "late" && L.late.length > 5){
+      h += '<div class="duerow"><span class="duewhat">Viele alte Termine offen?</span><span class="dueacts">'
+        + '<button class="btn small ghost" onclick="dueAllDone()">Alle ' + L.late.length + ' als erledigt markieren</button></span></div>';
+    }
+    L[state.dueOpen].forEach(function(it){
+      var days = daysBetween(todayIso(), it.p.date);
+      var pers = it.t.persons || 1;
+      var meta = (it.t.area || "") + " · " + pers + (pers === 1 ? " Person" : " Personen")
+        + (state.dueOpen === "prep" && it.t.tools ? " · " + it.t.tools : "");
+      h += '<div class="duerow"><span class="duedate">' + deOf(it.p.date)
+        + (state.dueOpen === "late" ? '<span class="dueago">seit ' + days + (days === 1 ? ' Tag' : ' Tagen') + '</span>' : '') + '</span>'
+        + '<span class="duewhat">' + esc(it.t.title) + '<span class="workmeta">' + esc(meta) + '</span></span><span class="dueacts">'
+        + '<button class="btn small primary" onclick="dueDone(\'' + it.p.id + '\')">✓ Erledigt</button>'
+        + '<button class="btn small ghost" onclick="dueMove(\'' + it.p.id + '\')">Verschieben</button>'
+        + '<button class="btn small ghost" onclick="dueSkip(\'' + it.p.id + '\')">Entfällt</button>'
+        + '</span></div>';
+    });
+    h += '</div>';
+  }
+  box.innerHTML = h;
+}
+
+function toggleDue(k){
+  state.dueOpen = state.dueOpen === k ? "" : k;
+  renderDue();
+}
+function dueDone(id){
+  var p = data.plan.find(function(x){ return x.id === id; });
+  if (!p) return;
+  p.done = true; p.skip = false;
+  toast("Als erledigt markiert");
+  saveData();
+}
+function dueAllDone(){
+  var list = dueLists().late;
+  if (!confirm("Alle " + list.length + " überfälligen Termine als erledigt markieren?")) return;
+  list.forEach(function(it){ it.p.done = true; });
+  toast(list.length + " Termine als erledigt markiert");
+  saveData();
+}
+function dueSkip(id){
+  var p = data.plan.find(function(x){ return x.id === id; });
+  if (!p) return;
+  p.skip = true; p.done = false;
+  toast("Als entfallen markiert");
+  saveData();
+}
+// Verschieben: Kalender öffnen, dann neuen Tag antippen
+function dueMove(id){
+  var p = data.plan.find(function(x){ return x.id === id; });
+  if (!p) return;
+  state.movePlan = id; state.selTask = null; state.dueOpen = "";
+  var t = todayIso();
+  var target = p.date < t ? t : p.date;
+  state.y = parseInt(target.slice(0, 4), 10); state.m = parseInt(target.slice(5, 7), 10);
+  if (isNarrow()) setView("cal");
+  setCalMode("month");
+}
+
+// ---------------- Sicherung: Erinnerung ----------------
+function markTime(suffix){
+  try { localStorage.setItem(KEY + suffix, String(Date.now())); } catch (e) {}
+}
+function backupInfo(){
+  var b = 0, c = 0;
+  try {
+    b = parseInt(localStorage.getItem(KEY + "-backup"), 10) || 0;
+    c = parseInt(localStorage.getItem(KEY + "-chg"), 10) || 0;
+  } catch (e) {}
+  return { b: b, c: c };
+}
+// Kurzer Hinweis rechts in der Leiste „Was steht an“
+function backupHtml(){
+  var i = backupInfo();
+  var days = i.b ? Math.floor((Date.now() - i.b) / 86400000) : -1;
+  var ago = days === 0 ? "heute" : days === 1 ? "gestern" : "vor " + days + " Tagen";
+  var changed = i.c > i.b + 2000;
+  var txt, warn = false;
+  if (!i.b){ txt = "Noch keine Sicherung"; warn = true; }
+  else if (!changed) txt = "Gesichert " + ago;
+  else { txt = "Letzte Sicherung " + ago; warn = days >= 7; }
+  return '<span class="bakinfo' + (warn ? ' warn' : '') + '" title="Die Daten liegen nur in diesem Browser. Eine Sicherung schützt vor Verlust.">'
+    + (warn ? '<span class="duedot"></span>' : '') + txt
+    + ' <button class="btn small ghost" onclick="saveBackup()">Jetzt sichern</button></span>';
 }
 
 // ---------------- Excel-Bausteine ----------------
@@ -1527,7 +1715,7 @@ function printDayMenu(iso){
 // Baut das Tagesblatt auf und druckt es
 function printDay(iso, orientation){
   closeModal();
-  var eintraege = data.plan.filter(function(p){ return p.date === iso; })
+  var eintraege = data.plan.filter(function(p){ return p.date === iso && !p.skip; })
     .map(function(p){ return { p: p, t: data.tasks.find(function(x){ return x.id === p.taskId; }) }; })
     .filter(function(e){ return e.t; });
   if (eintraege.length === 0) return toast("An diesem Tag ist nichts geplant");
@@ -1619,13 +1807,74 @@ function doPrint(orientation){
 }
 
 function excelMenu(){
-  var h = '<h2>Excel</h2><p>Was möchtest du tun?</p>';
+  var h = '<div class="modalhead"><div><h2>Daten</h2><p>Excel-Datei und Sicherung</p></div>'
+    + '<button class="closex" aria-label="Schließen" onclick="closeModal()">✕</button></div>';
   h += '<button class="btn primary" onclick="closeModal();exportExcel()">⬇ Plan als Excel-Datei speichern (.xlsx)</button>';
   h += '<button class="btn ghost" onclick="closeModal();document.getElementById(\'importfile\').click()">⬆ Excel-Datei einlesen</button>';
-  h += '<p style="margin:10px 0 0;font-size:12px">Die gespeicherte Datei öffnet sich mit Doppelklick direkt in Excel, ohne Nachfrage nach Trennzeichen. Beim Einlesen gehen .xlsx und .csv, Arbeiten und Termine werden ergänzt, nichts doppelt angelegt.</p>';
-  h += '<button class="btn ghost" style="margin-top:10px" onclick="closeModal()">Abbrechen</button>';
+  h += '<p style="margin:2px 0 0;font-size:12px">Die gespeicherte Datei öffnet sich mit Doppelklick direkt in Excel. Beim Einlesen gehen .xlsx und .csv, Arbeiten und Termine werden ergänzt, nichts doppelt angelegt.</p>';
+  h += '<div class="actionsep">Sicherung (alles, auch wiederkehrende Monate und Regeln)</div>';
+  h += '<button class="btn ghost" onclick="closeModal();saveBackup()">⬇ Sicherung speichern</button>';
+  h += '<button class="btn ghost" onclick="closeModal();document.getElementById(\'backupfile\').click()">⬆ Sicherung einlesen</button>';
+  h += '<p style="margin:2px 0 0;font-size:12px">Die Daten liegen nur in diesem Browser. Eine Sicherung schützt vor Verlust und bringt den Stand auf ein anderes Gerät.</p>';
   document.getElementById("modal").innerHTML = h;
   openModal();
+}
+
+function saveBackup(){
+  var d = new Date();
+  var name = "HYC_Arbeitsplaner_Sicherung_" + isoOf(d.getFullYear(), d.getMonth() + 1, d.getDate()) + ".json";
+  downloadBlob(new Blob([JSON.stringify({ app: "hyc-arbeitsplaner", version: 1, data: data })], { type: "application/json" }), name);
+  markTime("-backup");
+  toast("Sicherung gespeichert");
+  renderDue();
+}
+
+// Prüft eine eingelesene Sicherung: nur erwartete Kennungen und Datumsangaben
+function validData(d){
+  var idOk = /^[A-Za-z0-9_-]{1,40}$/, dateOk = /^\d{4}-\d{2}-\d{2}$/;
+  if (!d || typeof d !== "object" || !Array.isArray(d.tasks) || !Array.isArray(d.plan)) return false;
+  if (!d.tasks.every(function(t){ return t && idOk.test(String(t.id)) && typeof t.title === "string"; })) return false;
+  if (!d.plan.every(function(p){ return p && idOk.test(String(p.id)) && idOk.test(String(p.taskId)) && dateOk.test(String(p.date)); })) return false;
+  return true;
+}
+
+// Ergänzt fehlende Felder einer Sicherung
+function normalizeData(d){
+  if (!Array.isArray(d.safetyExtra)) d.safetyExtra = [];
+  d.tasks.forEach(function(t){
+    if (t.tools === undefined) t.tools = "";
+    if (!t.area) t.area = AREAS[AREAS.length - 1];
+    if (!Array.isArray(t.months)) t.months = [];
+    if (t.rule === undefined) t.rule = "";
+    if (!Array.isArray(t.safety)) t.safety = [];
+    if (!t.persons) t.persons = 1;
+    if (!t.prio) t.prio = 2;
+    t.safety.forEach(function(s){
+      if (SAFETY.indexOf(s) < 0 && d.safetyExtra.indexOf(s) < 0) d.safetyExtra.push(s);
+    });
+  });
+  return d;
+}
+
+function restoreBackup(file){
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    var d = null;
+    try {
+      var obj = JSON.parse(String(reader.result));
+      d = obj && obj.app === "hyc-arbeitsplaner" ? obj.data : null;
+    } catch (e) { d = null; }
+    if (!d || !validData(d)) return toast("Das ist keine gültige Sicherung des HYC-Arbeitsplaners");
+    if (!confirm("Der jetzige Stand wird durch die Sicherung ersetzt (" + d.tasks.length + " Arbeiten, " + d.plan.length + " Termine). Fortfahren?")) return;
+    data = normalizeData(d);
+    state.selTask = null; state.movePlan = null;
+    toast("Sicherung eingelesen");
+    saveData();
+    markTime("-backup");
+    renderDue();
+  };
+  reader.readAsText(file);
 }
 
 function planRows(){
@@ -1636,7 +1885,7 @@ function planRows(){
     var t = data.tasks.find(function(x){ return x.id === p.taskId; });
     if (!t) return;
     var d = new Date(p.date + "T12:00:00");
-    rows.push([deOf(p.date), wds[d.getDay()], t.area || "", t.title, prioName[t.prio], t.tools || "", (t.safety || []).join(", "), String(t.persons || 1), p.done ? "erledigt" : "offen"]);
+    rows.push([deOf(p.date), wds[d.getDay()], t.area || "", t.title, prioName[t.prio], t.tools || "", (t.safety || []).join(", "), String(t.persons || 1), p.done ? "erledigt" : p.skip ? "entfällt" : "offen"]);
   });
   var planned = {};
   data.plan.forEach(function(p){ planned[p.taskId] = true; });
@@ -1799,7 +2048,9 @@ function applyRows(rows){
       var iso = m[3] + "-" + pad(parseInt(m[2], 10)) + "-" + pad(parseInt(m[1], 10));
       var dup = data.plan.find(function(p){ return p.taskId === t.id && p.date === iso; });
       if (!dup){
-        data.plan.push({ id: uid(), taskId: t.id, date: iso, done: done });
+        var np = { id: uid(), taskId: t.id, date: iso, done: done };
+        if (String(r[8] || "").trim().toLowerCase() === "entfällt") np.skip = true;
+        data.plan.push(np);
         nPlan++;
       } else { nSkip++; if (done) dup.done = true; }
     }
@@ -1830,7 +2081,7 @@ function setView(v){
   window.scrollTo(0, 0);
 }
 
-function render(){ renderList(); renderCal(); setHint(); }
+function render(){ renderList(); renderCal(); setHint(); renderDue(); }
 
 document.getElementById("newarea").innerHTML = AREAS.map(function(a){ return '<option>' + esc(a) + '</option>'; }).join("");
 document.getElementById("logo").src = LOGO_B64;
